@@ -459,7 +459,7 @@ def smote_tomed_link(df, target):
     X = df.drop(columns=[target])
     
     smote_tl = SMOTETomek(tomek=TomekLinks(sampling_strategy='majority'))
-    X_resampled, y_resampled = smote_tl.fit_sample(X, y)
+    X_resampled, y_resampled = smote_tl.fit_resample(X, y)
     # Redimensionamos de las clases.
     y_resampled = y_resampled.to_numpy().reshape(-1, 1)
     y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
@@ -483,7 +483,7 @@ def smote_edited_nearest_neighbor(df, target):
     X = df.drop(columns=[target])
     
     smote_enn = SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='majority'))
-    X_resampled, y_resampled = smote_enn.fit_sample(X, y)
+    X_resampled, y_resampled = smote_enn.fit_resample(X, y)
     # Redimensionamos las clases.
     y_resampled = y_resampled.to_numpy().reshape(-1, 1)
     y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
