@@ -1,3 +1,23 @@
+#----------------------------------------------------------------  
+#----------------------------------------------------------------  
+# ESTAS SON LAS UNICAS REFERENCIAS A FUNCIONES DE ESTE ARCHIVO QUE HE ENCONTRADO 
+
+
+# wf.drop_missing_values_columns(data, 5)
+
+# wf.mode_imputation(data_dropped, 49)
+
+# wf.min_max_normalization(datos_mode)
+
+# wf.smote_tomed_link(data_std,49)
+
+# wf.smote_edited_nearest_neighbor(data_std,49)
+
+
+#----------------------------------------------------------------  
+#----------------------------------------------------------------  
+
+
 
 # LIBRERIAS
 
@@ -36,7 +56,16 @@ from sklearn.utils import shuffle
 from imblearn.under_sampling import RandomUnderSampler, NearMiss, CondensedNearestNeighbour, TomekLinks, EditedNearestNeighbours, OneSidedSelection, NeighbourhoodCleaningRule
 from imblearn.combine import SMOTETomek, SMOTEENN
 
-from missingpy import MissForest
+
+#----------------------------------------------------------------  
+#----------------------------------------------------------------  
+#----------------------------------------------------------------  
+        # COMENTADA POR MI
+#---------------------------------------------------------------- 
+#----------------------------------------------------------------  
+#----------------------------------------------------------------  
+
+#from missingpy import MissForest
 
 import sys
 from impyute.imputation.cs import fast_knn
