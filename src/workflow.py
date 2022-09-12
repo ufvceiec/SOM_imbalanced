@@ -921,7 +921,7 @@ def lr_classifier(x_train, y_train, x_test, y_test):
     
     plot_history(LR)
     predict_model_and_report(LR, x_test, y_test, ['exitus', 'no exitus'])
-    
+    mode_imputation
     
 
 def random_forest_dt(feature_cols, x_train, y_train, x_test, y_test, n_estimators, criterio):

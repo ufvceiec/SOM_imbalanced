@@ -1,12 +1,13 @@
-Funcion que elimina columnas con más null values de lo permitido
+Función que elimina columnas con más null values de lo permitido
 wf.drop_missing_values_columns(data, 5)
 
 
-
+Función que rellena de los missing values mediante la moda de cada columna(variable).
 wf.mode_imputation(data_dropped, 49)
 
 
 
+Función que hace una normalización minmax de los datos: y = (x-min)/(max-min)
 wf.min_max_normalization(datos_mode)
 
 
