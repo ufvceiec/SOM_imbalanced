@@ -258,6 +258,9 @@ def mode_imputation(df, target):
     
     data = pd.DataFrame(imp_mean_data, columns=df_cols_mean)
     
+    #### Comentario aniadido por Carlos
+    #### El numero de columna seleccionado en target sera redondeada, normalmente esto tendra
+    #### sentido si es la columna que indica la clase, 1, 2, 3...
     data[target] = data[target].round()
     
     return data
