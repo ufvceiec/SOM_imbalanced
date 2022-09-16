@@ -11,6 +11,8 @@
 
 # wf.smote_tomed_link(data_std,49)
 
+# Linea 500
+
 # wf.smote_edited_nearest_neighbor(data_std,49)
 
 
@@ -926,7 +928,7 @@ def lr_classifier(x_train, y_train, x_test, y_test):
     predict_model_and_report(LR, x_test, y_test, ['exitus', 'no exitus'])
     mode_imputation
     
-
+smote_tomed_link
 def random_forest_dt(feature_cols, x_train, y_train, x_test, y_test, n_estimators, criterio):
 
     random_forest = ensemble.RandomForestClassifier(n_estimators=n_estimators, max_depth=x_train.shape[1]-1, criterion=criterio)
