@@ -16,7 +16,11 @@ DESCRIPCIÓN: ARCHIVO CON FUNCIONES DE PYHTON PARA EL PROYECTO DE EVALUACIÓN DE
 #####---------------------LIBRERIAS-----------------------------------------------------------------###### 
 
 from sklearn import preprocessing
+import numpy as np
 import pandas as pd
+from imblearn.under_sampling import *
+from imblearn.over_sampling import *
+from imblearn.pipeline import *
 
 #####---------------------FIN LIBRERIAS-------------------------------------------------------------###### 
 
@@ -43,6 +47,75 @@ def min_max(df):
     
     # Devolvemos el data frame ya normalizado
     return df
+
+
+"""
+Función para combinar la técnica de over sampling SMOTE junto con las siguientes técnicas de under sampling:
+◦ Tomek Links
+◦ Edited Nearest Neighbors
+◦ Condensed Nearest Neighbors
+◦ Neighbourhood Cleaning Rule
+◦ One Side Selection
+
+La función
+"""
+def SMOTE_combinaciones(X,y):
+    
+    #----------Tomek Links---------------------
+    # Hacemos el pipeline, indicando que métodos de under y over sampling usaremos
+    over = SMOTE()
+    under = TomekLinks()
+    steps = [('o', over), ('u', under)]
+    pipeline = Pipeline(steps=steps)
+
+
+    # Generamos los datos sintéticos y los guardamos en las nuevas variables
+    X_TomekLinks, y_TomekLinks = pipeline.fit_resample(X,y)
+    
+    
+    #----------Edited Nearest Neighbors---------------------
+    over = SMOTE()
+    under = EditedNearestNeighbours()
+    steps = [('o', over), ('u', under)]
+    pipeline = Pipeline(steps=steps)
+
+
+    X_EditedNearestNeighbours, y_EditedNearestNeighbours = pipeline.fit_resample(X,y)
+    
+    #----------Condensed Nearest Neighbour---------------------
+    over = SMOTE()
+    under = CondensedNearestNeighbour()
+    steps = [('o', over), ('u', under)]
+    pipeline = Pipeline(steps=steps)
+
+
+    X_CondensedNearestNeighbour, y_CondensedNearestNeighbour = pipeline.fit_resample(X,y)    
+    
+    #----------Neighbourhood Cleaning Rule---------------------
+    over = SMOTE()
+    under = NeighbourhoodCleaningRule()
+    steps = [('o', over), ('u', under)]
+    pipeline = Pipeline(steps=steps)
+
+
+    X_NeighbourhoodCleaningRule, y_NeighbourhoodCleaningRule = pipeline.fit_resample(X,y) 
+    
+    #----------One Side Selection---------------------
+    over = SMOTE()
+    under = OneSidedSelection()
+    steps = [('o', over), ('u', under)]
+    pipeline = Pipeline(steps=steps)
+
+
+    X_OneSidedSelection, y_OneSidedSelection = pipeline.fit_resample(X,y)     
+    
+    
+    
+    
+    
+
+
+
 #####-----------------------------------------------------------------------------------------------######
 
 
