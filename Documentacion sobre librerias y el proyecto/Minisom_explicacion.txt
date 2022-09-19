@@ -52,7 +52,7 @@ Donde:
             1. learning rate
             2. current iteration
             3. maximum number of iterations allowed
-            Note that if a lambda function is used to define the decay
+            Note that if a lambda function i´s used to define the decay
             MiniSom will not be pickable anymore.
 
         neighborhood_function : string, optional (default='gaussian')

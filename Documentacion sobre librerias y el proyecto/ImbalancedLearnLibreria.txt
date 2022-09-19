@@ -1,0 +1,204 @@
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+						LIBRERÍA IMBALANCED LEARN
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+En este archivo se explica de forma básica el uso de la librería Imbalanced Learn (https://imbalanced-learn.org/stable/index.html)
+
+Librería usada para poder utilizar técnicas de undersampling y oversampling en python. Las cuales nos permiten balancear datasets que estén desbalanceados, ya sea aumentando el número de muestras de la clase(s) minoritaria (oversampling) o disminuyendo el de la clase(s) mayoritaria (undersampling).
+
+
+Para obtener más información acerca de los métodos que se van a exponer a continuación, visitar la guía oficial: https://imbalanced-learn.org/stable/references/ , con especial atención a los apartados de "undersampling", "oversampling" y "pipeline". (Pipeline es una técnica que se usa para combinar a la vez técnicas de undersampling y oversampling.)
+
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+						OVERSAMPLING
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+        ◦ SMOTE
+        ◦ ADASYN
+        ◦ Borderline SMOTE
+        ◦ SVM SMOTE
+        ◦ Kmeans SMOTE
+             
+-------------------------------------------------------------------
+
+    SMOTE  - Synthetic Minority Over-sampling Technique 
+
+Parámetros posibles de entrada para la creación del SMOTE:
+SMOTE(sampling_strategy='auto', random_state=None, k_neighbors=5, n_jobs=None)
+(
+Donde:
+
+    sampling_strategy: float, str, dict or callable, default=’auto’
+                        La estrategia que seguirá el algoritmo para hacer el oversampling.
+    
+    random_state: int, RandomState instance, default=None
+                        Controlamos la aleatoriedad del algoritmo
+                        
+    k_neighbors: int or object, default=5
+                        Número de vecinos usados en el algoritmo.
+    
+    n_jobs: int, default=None
+                        Number of CPU cores used during the cross-validation loop. None significa que usará uno.
+                    
+        
+        
+FUNCIONES ÚTILES:
+
+    fit_resample(X, y)
+    Reconstruimos nuestro dataset usando el algoritmo. Donde "X" es la matriz de datos de nuestra muestra, con una dimensionalidad n, y donde "y" son las etiquetas correspondientes a esos datos, es decir, su clase.
+    "X" tiene que estar en formato de array, igual que "y".
+    La función devuelve "X_resampled" e "y_resampled".
+
+-------------------------------------------------------------------
+
+    Los algoritmos "ADASYN","Borderline SMOTE","SVM SMOTE" y "Kmeans SMOTE" funcionan exactamente igual que el "SMOTE" explicado justo arriba, solo hay algún parámetro de entrada extra en alguno, que en caso de necesitarlo se puede comprobar en la página de la librería. Por tanto no se van a explicar y pasaremos ya a las técnicas de undersampling.
+
+     
+-------------------------------------------------------------------
+-------------------------------------------------------------------        
+-------------------------------------------------------------------
+						FIN OVERSAMPLING
+-------------------------------------------------------------------    
+-------------------------------------------------------------------
+-------------------------------------------------------------------       
+
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+						UNDERSAMPLING
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+        ◦ Tomek Links
+        ◦ Edited Nearest Neighbors
+        ◦ Condensed Nearest Neighbors
+        ◦ Neighbourhood Cleaning Rule
+        ◦ One Side Selection
+             
+-------------------------------------------------------------------
+
+    Condensed Nearest Neighbors 
+
+Parámetros posibles de entrada para la creación del Condensed Nearest Neighbors:
+CondensedNearestNeighbors(sampling_strategy='auto', random_state=None, n_neighbors=None, n_seeds_S=1, n_jobs=None)
+
+Donde:
+
+    sampling_strategy: str, list or callable
+                        La estrategia que seguirá el algoritmo para hacer el oversampling.
+    
+    random_state: int, RandomState instance, default=None
+                        Controlamos la aleatoriedad del algoritmo
+                        
+    n_neighbors: int or estimator object, default=None
+                        Número de vecinos usados en el algoritmo.
+                        
+    n_seeds_S: int, default=1
+                        Número de muestras a extraer para construir el set S.
+    
+    n_jobs: int, default=None
+                        Number of CPU cores used during the cross-validation loop. None significa que usará uno.
+                    
+        
+        
+FUNCIONES ÚTILES:
+
+    fit_resample(X, y)
+    Reconstruimos nuestro dataset usando el algoritmo. Donde "X" es la matriz de datos de nuestra muestra, con una dimensionalidad n, y donde "y" son las etiquetas correspondientes a esos datos, es decir, su clase.
+    "X" tiene que estar en formato de array, igual que "y".
+    La función devuelve "X_resampled" e "y_resampled".
+    
+-------------------------------------------------------------------
+
+    LOS ALGORITMOS restantes de undersampling funcionan de manera similar al explicado justo arriba, solo hay algunos parámetros de entrada distintos, que dependerá de lo que necesite el algoritmo utilizado. Por tanto no se van a explicar y solo se pondrá la cabecera de la función, para más información acudir a la web oficial citada al inicio del texto.
+    
+-------------------------------------------------------------------
+
+    Tomek Links
+
+Parámetros posibles de entrada para la creación del Condensed Tomek Links:
+Tomek Links(sampling_strategy='auto', n_jobs=None)
+
+-------------------------------------------------------------------
+
+    Edited Nearest Neighbors
+
+Parámetros posibles de entrada para la creación del Edited Nearest Neighbors:
+EditedNearestNeighbors(sampling_strategy='auto', n_neighbors=3, kind_sel='all', n_jobs=None)
+
+-------------------------------------------------------------------
+
+    Neighbourhood Cleaning Rule
+
+Parámetros posibles de entrada para la creación del Neighbourhood Cleaning Rule:
+NeighbourhoodCleaningRule(sampling_strategy='auto', n_neighbors=3, kind_sel='all', threshold_cleaning=0.5, n_jobs=None)
+
+-------------------------------------------------------------------
+
+    One Side Selection
+
+Parámetros posibles de entrada para la creación del Neighbourhood One Side Selection:
+OneSidedSelection(sampling_strategy='auto', random_state=None, n_neighbors=None, n_seeds_S=1, n_jobs=None)
+
+
+-------------------------------------------------------------------        
+-------------------------------------------------------------------
+-------------------------------------------------------------------        
+-------------------------------------------------------------------
+						FIN UNDERSAMPLING
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+
+-------------------------------------------------------------------        
+-------------------------------------------------------------------
+-------------------------------------------------------------------        
+-------------------------------------------------------------------
+						PIPELINE
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+EL pipeline es la técnica que usaremos cuando queramos mezclar varias técnicas a la vez.
+En nuestro caso usaremos una de oversampling combinada con otra de undersampling.
+
+
+Pipeline(steps, *, memory=None, verbose=False)   
+Nosotros solo usaremos los steps, que será donde indiquemos que conjunto de técnicas queremos emplear.
+
+Un ejemplo útil de cómo lo usaríamos sería el siguiente:
+
+# define pipeline
+over = SMOTE(sampling_strategy=0.1)
+under = RandomUnderSampler(sampling_strategy=0.5)
+steps = [('o', over), ('u', under)]
+pipeline = Pipeline(steps=steps)
+# transform the dataset
+X, y = pipeline.fit_resample(X, y)
+
+Y ya tendríamos en "X" e "y" los nuevos datos aplicando un SMOTE y un random undersampling.
+
+
+-------------------------------------------------------------------        
+-------------------------------------------------------------------
+-------------------------------------------------------------------        
+-------------------------------------------------------------------
+						FIN PIPELINE
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+
+(Para aprender qué hacen cada uno de los algoritmos de undersampling y oversampling, de manera divulgativa, se recomienda la lectura del TFM de Joaquín García Abad, Máster Universitario en Análisis de Datos para la Inteligencia de Negocios, Universidad de Oviedo.)
