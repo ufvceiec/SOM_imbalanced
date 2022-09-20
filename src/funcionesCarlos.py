@@ -63,7 +63,7 @@ def SMOTE_combinaciones(X,y):
     
     #----------Tomek Links---------------------
     # Hacemos el pipeline, indicando que métodos de under y over sampling usaremos
-    over = SMOTE()
+    over = SMOTE(random_state=1)
     under = TomekLinks()
     steps = [('o', over), ('u', under)]
     pipeline = Pipeline(steps=steps)
@@ -109,11 +109,12 @@ def SMOTE_combinaciones(X,y):
 
     X_OneSidedSelection, y_OneSidedSelection = pipeline.fit_resample(X,y)     
     
+        
+    X_array = np.array([X_TomekLinks,X_EditedNearestNeighbours,X_CondensedNearestNeighbour,X_NeighbourhoodCleaningRule,X_OneSidedSelection])
+    y_array = np.array([y_TomekLinks,y_EditedNearestNeighbours,y_CondensedNearestNeighbour,y_NeighbourhoodCleaningRule,y_OneSidedSelection])
     
     
-    
-    
-
+    return X_array,y_array
 
 
 #####-----------------------------------------------------------------------------------------------######
