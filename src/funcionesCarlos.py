@@ -57,13 +57,32 @@ Función para combinar la técnica de over sampling SMOTE junto con las siguient
 ◦ Neighbourhood Cleaning Rule
 ◦ One Side Selection
 
-La función
+La función devuelve un array con los datos remuestreados, siguiendo el orden definido en el comentario de arriba
 """
-def SMOTE_combinaciones(X,y):
+def overSampling_combinaciones(X,y,overSampling):
+    
+    over=0
+    
+    ### Tengo que hacer esta basurilla en vez de un switch-case porque en python 3.9 el match-case que vendría a ser
+    ### el switch de python, no está aún implementado, se implementó en python 3.10, que todavía es demasiado reciente
+    ### y va a dar problemas por no ser compatible con otras cosas
+    if(overSampling == "SMOTE"):
+        over = SMOTE()
+    if(overSampling == "ADASYN"):
+        over = ADASYN()
+    if(overSampling == "BorderlineSMOTE"):
+        over = BorderlineSMOTE()
+    if(overSampling == "SVMSMOTE"):
+        over = SVMSMOTE()
+    if(overSampling == "KMeansSMOTE"):
+        over = KMeansSMOTE(cluster_balance_threshold=0.05)
+    
+    if(over==0):
+        print("Tecnica de oversampling incorrecta, revise el nombre...")
+        return 0,0
     
     #----------Tomek Links---------------------
     # Hacemos el pipeline, indicando que métodos de under y over sampling usaremos
-    over = SMOTE(random_state=1)
     under = TomekLinks()
     steps = [('o', over), ('u', under)]
     pipeline = Pipeline(steps=steps)
@@ -74,38 +93,33 @@ def SMOTE_combinaciones(X,y):
     
     
     #----------Edited Nearest Neighbors---------------------
-    over = SMOTE()
     under = EditedNearestNeighbours()
     steps = [('o', over), ('u', under)]
     pipeline = Pipeline(steps=steps)
 
-
     X_EditedNearestNeighbours, y_EditedNearestNeighbours = pipeline.fit_resample(X,y)
     
+    
     #----------Condensed Nearest Neighbour---------------------
-    over = SMOTE()
     under = CondensedNearestNeighbour()
     steps = [('o', over), ('u', under)]
     pipeline = Pipeline(steps=steps)
 
-
     X_CondensedNearestNeighbour, y_CondensedNearestNeighbour = pipeline.fit_resample(X,y)    
     
+    
     #----------Neighbourhood Cleaning Rule---------------------
-    over = SMOTE()
     under = NeighbourhoodCleaningRule()
     steps = [('o', over), ('u', under)]
     pipeline = Pipeline(steps=steps)
 
-
     X_NeighbourhoodCleaningRule, y_NeighbourhoodCleaningRule = pipeline.fit_resample(X,y) 
     
+    
     #----------One Side Selection---------------------
-    over = SMOTE()
     under = OneSidedSelection()
     steps = [('o', over), ('u', under)]
     pipeline = Pipeline(steps=steps)
-
 
     X_OneSidedSelection, y_OneSidedSelection = pipeline.fit_resample(X,y)     
     
@@ -115,6 +129,31 @@ def SMOTE_combinaciones(X,y):
     
     
     return X_array,y_array
+
+
+
+"""
+Función para comprobar el error topológico y de cuantificación de la técnica de oversampling utilizada junto con las siguientes técnicas de under sampling:
+◦ Tomek Links
+◦ Edited Nearest Neighbors
+◦ Condensed Nearest Neighbors
+◦ Neighbourhood Cleaning Rule
+◦ One Side Selection
+
+La función evalua e imprime por pantalla el error topológico y de cuantificación de los datos contra el SOM.
+"""
+def SOM_errores(som,X_array,overSamplingUsado):
+
+    US_tecnica = ["Tomek Links","Edited Nearest Neighbors","Condensed Nearest Neighbors","Neighbourhood Cleaning Rule","One Side Selection"]
+
+
+    for cont,X in enumerate(X_array):      
+        print("\n\nERROR de "+overSamplingUsado+" y "+US_tecnica[cont]+":")
+        print("Topological error:",som.topographic_error(X))
+        print("Quantization error:",som.quantization_error(X))
+
+              
+    return
 
 
 #####-----------------------------------------------------------------------------------------------######
