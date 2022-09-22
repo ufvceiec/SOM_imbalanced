@@ -61,6 +61,7 @@ La función devuelve un array con los datos remuestreados, siguiendo el orden de
 """
 def overSampling_combinaciones(X,y,overSampling):
     
+    # Damos un valor por si no le asignamos ninguna en los ifs
     over=0
     
     ### Tengo que hacer esta basurilla en vez de un switch-case porque en python 3.9 el match-case que vendría a ser
@@ -79,56 +80,64 @@ def overSampling_combinaciones(X,y,overSampling):
     
     if(over==0):
         print("Tecnica de oversampling incorrecta, revise el nombre...")
-        return 0,0
+        return 0,0,0
+    
+#--------------------------------------------------------------------------------------------------------    
+    ## Vamos a realizar el método de oversampling seleccionado, y quedarnos también con ese conjunto de datos sintéticos
+    ## generados, para poder evaluarlos aislados
+     
+    # Genero el nuevo conjunto
+    X_over, y_over = over.fit_resample(X,y)
+    
+    # Miro cuantos elementos tiene
+    num_elems = X_over.shape[0]
+    
+    # Miro cuantos son nuevos comparandolo con el número de elementos originales
+    num_elems_nuevos = num_elems - X.shape[0]
+    
+    # Introduzco solo los nuevos en el array de nuevos elementos
+    over_array_elems_nuevos = X_over[-num_elems_nuevos:]
+    # Introduzco solo las nuevas etiquetas
+    over_array_etiquetas_nuevas = y_over[-num_elems_nuevos:]
+#--------------------------------------------------------------------------------------------------------     
+    
+    #Ahora vamos a aplicar distintos undersampling a nuestro conjunto que ya ha sido "oversampleado"
     
     #----------Tomek Links---------------------
-    # Hacemos el pipeline, indicando que métodos de under y over sampling usaremos
     under = TomekLinks()
-    steps = [('o', over), ('u', under)]
-    pipeline = Pipeline(steps=steps)
-
-
-    # Generamos los datos sintéticos y los guardamos en las nuevas variables
-    X_TomekLinks, y_TomekLinks = pipeline.fit_resample(X,y)
     
+    X_TomekLinks, y_TomekLinks = under.fit_resample(X_over,y_over)
     
+       
     #----------Edited Nearest Neighbors---------------------
     under = EditedNearestNeighbours()
-    steps = [('o', over), ('u', under)]
-    pipeline = Pipeline(steps=steps)
-
-    X_EditedNearestNeighbours, y_EditedNearestNeighbours = pipeline.fit_resample(X,y)
+    
+    X_EditedNearestNeighbours, y_EditedNearestNeighbours = under.fit_resample(X_over,y_over)
     
     
     #----------Condensed Nearest Neighbour---------------------
     under = CondensedNearestNeighbour()
-    steps = [('o', over), ('u', under)]
-    pipeline = Pipeline(steps=steps)
-
-    X_CondensedNearestNeighbour, y_CondensedNearestNeighbour = pipeline.fit_resample(X,y)    
+    
+    X_CondensedNearestNeighbour, y_CondensedNearestNeighbour =  under.fit_resample(X_over,y_over)   
     
     
     #----------Neighbourhood Cleaning Rule---------------------
     under = NeighbourhoodCleaningRule()
-    steps = [('o', over), ('u', under)]
-    pipeline = Pipeline(steps=steps)
-
-    X_NeighbourhoodCleaningRule, y_NeighbourhoodCleaningRule = pipeline.fit_resample(X,y) 
+    
+    X_NeighbourhoodCleaningRule, y_NeighbourhoodCleaningRule = under.fit_resample(X_over,y_over)
     
     
     #----------One Side Selection---------------------
     under = OneSidedSelection()
-    steps = [('o', over), ('u', under)]
-    pipeline = Pipeline(steps=steps)
-
-    X_OneSidedSelection, y_OneSidedSelection = pipeline.fit_resample(X,y)     
+    
+    X_OneSidedSelection, y_OneSidedSelection = under.fit_resample(X_over,y_over)   
     
         
     X_array = np.array([X_TomekLinks,X_EditedNearestNeighbours,X_CondensedNearestNeighbour,X_NeighbourhoodCleaningRule,X_OneSidedSelection])
     y_array = np.array([y_TomekLinks,y_EditedNearestNeighbours,y_CondensedNearestNeighbour,y_NeighbourhoodCleaningRule,y_OneSidedSelection])
+
     
-    
-    return X_array,y_array
+    return X_array,y_array,over_array_elems_nuevos,over_array_etiquetas_nuevas
 
 
 
