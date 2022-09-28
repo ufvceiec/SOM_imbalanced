@@ -50,14 +50,21 @@ def min_max(df):
 
 
 """
-Función para combinar la técnica de over sampling SMOTE junto con las siguientes técnicas de under sampling:
+Función para combinar la técnica de over sampling recibida como argumento junto con las siguientes técnicas de under sampling:
 ◦ Tomek Links
 ◦ Edited Nearest Neighbors
 ◦ Condensed Nearest Neighbors
 ◦ Neighbourhood Cleaning Rule
 ◦ One Side Selection
 
-La función devuelve un array con los datos remuestreados, siguiendo el orden definido en el comentario de arriba
+Las técnicas de over sampling admitidas son:
+◦ SMOTE
+◦ ADASYN
+◦ BorderlineSMOTE
+◦ SVMSMOTE
+◦ KMeansSMOTE
+
+La función devuelve un array con los datos remuestreados, siguiendo el orden definido en el comentario del under sampling
 """
 def overSampling_combinaciones(X,y,overSampling):
     
@@ -80,7 +87,7 @@ def overSampling_combinaciones(X,y,overSampling):
     
     if(over==0):
         print("Tecnica de oversampling incorrecta, revise el nombre...")
-        return 0,0,0
+        return 0,0,0,0
     
 #--------------------------------------------------------------------------------------------------------    
     ## Vamos a realizar el método de oversampling seleccionado, y quedarnos también con ese conjunto de datos sintéticos
@@ -132,11 +139,14 @@ def overSampling_combinaciones(X,y,overSampling):
     
     X_OneSidedSelection, y_OneSidedSelection = under.fit_resample(X_over,y_over)   
     
-        
+    
+    # Terminamos creando un array con todos los conjuntos nuevos, y otro con sus correspondientes etiquetas
+    
     X_array = np.array([X_TomekLinks,X_EditedNearestNeighbours,X_CondensedNearestNeighbour,X_NeighbourhoodCleaningRule,X_OneSidedSelection])
     y_array = np.array([y_TomekLinks,y_EditedNearestNeighbours,y_CondensedNearestNeighbour,y_NeighbourhoodCleaningRule,y_OneSidedSelection])
 
     
+    # Devolvemos los arrays de los nuevos conjuntos y el de solo los elementos sintéticos
     return X_array,y_array,over_array_elems_nuevos,over_array_etiquetas_nuevas
 
 
