@@ -1,4 +1,3 @@
-
 # LIBRERIAS
 
 import warnings
@@ -32,9 +31,10 @@ from scipy.stats import kruskal
 # from sklearn.utils.multiclass import unique_labels
 from sklearn.utils import shuffle
 
-# from imblearn.over_sampling import RandomOverSampler, SMOTE, BorderlineSMOTE, SVMSMOTE, ADASYN
+from imblearn.over_sampling import RandomOverSampler, SMOTE, BorderlineSMOTE, SVMSMOTE, ADASYN, KMeansSMOTE
 from imblearn.under_sampling import RandomUnderSampler, NearMiss, CondensedNearestNeighbour, TomekLinks, EditedNearestNeighbours, OneSidedSelection, NeighbourhoodCleaningRule
 from imblearn.combine import SMOTETomek, SMOTEENN
+from imblearn.pipeline import Pipeline
 
 from missingpy import MissForest
 
@@ -473,7 +473,6 @@ def smote_tomed_link(df, target):
     return data
 
 
-
 """
     SMOTE + Edited Nearest Neighbors
 """
@@ -481,8 +480,8 @@ def smote_edited_nearest_neighbor(df, target):
 
     y = df[target]
     X = df.drop(columns=[target])
-    
-    smote_enn = SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='majority'))
+
+    smote_enn = SMOTEENN(enn=EditedNearestNeighbours(sampling_strategy='auto'))
     X_resampled, y_resampled = smote_enn.fit_resample(X, y)
     # Redimensionamos las clases.
     y_resampled = y_resampled.to_numpy().reshape(-1, 1)
@@ -496,6 +495,833 @@ def smote_edited_nearest_neighbor(df, target):
                 
     return data
 
+"""
+    SMOTE + ENN 2
+"""
+def smote_enn2(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+    numMenor = y.value_counts().max()
+    # Crear una instancia de SMOTE
+    smote = SMOTE(sampling_strategy='auto')
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    enn = EditedNearestNeighbours(sampling_strategy='auto', n_neighbors= 1)
+    pipeline = Pipeline([('SMOTE', smote), ('ENN', enn)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    SMOTE + CNN
+"""
+def smote_cnn(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+    numMenor = y.value_counts().max()
+    # Crear una instancia de SMOTE
+    #smote = SMOTE(sampling_strategy='auto', random_state=42)
+    smote = SMOTE(sampling_strategy={0: numMenor + 20, 1: numMenor + 20})
+
+    # Aplicar SMOTE a los datos
+    X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    cnn = CondensedNearestNeighbour(sampling_strategy='all', n_seeds_S= numMenor - 5)
+    pipeline = Pipeline([('SMOTE', smote), ('CNN', cnn)])
+
+    # Aplicar CNN a los datos sobremuestreados por SMOTE
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    SMOTE + NCR
+"""
+def smote_ncr(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+
+    # Crear una instancia de SMOTE
+    smote = SMOTE(sampling_strategy='auto', random_state=42)
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    ncr = NeighbourhoodCleaningRule(sampling_strategy='auto')
+    pipeline = Pipeline([('SMOTE', smote), ('NCR', ncr)])
+
+    # Aplicar CNN a los datos sobremuestreados por SMOTE
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    SMOTE + OSD
+"""
+def smote_osd(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+    numMenor = y.value_counts().max()
+    # Crear una instancia de SMOTE
+    smote = SMOTE(sampling_strategy={0: numMenor + 20, 1: numMenor + 20})
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    oss = OneSidedSelection(sampling_strategy='all', n_seeds_S = numMenor - 5)
+    pipeline = Pipeline([('SMOTE', smote), ('OSS', oss)])
+
+    # Aplicar CNN a los datos sobremuestreados por SMOTE
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    ADASYN + TOMEK
+"""
+def adasyn_tomek(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+
+    # Crear una instancia de SMOTE
+    adasyn = ADASYN(sampling_strategy='auto')
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    tmk = TomekLinks(sampling_strategy='all')
+    pipeline = Pipeline([('ADASYN', adasyn), ('tomek', tmk)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    ADASYN + ENN
+"""
+def adasyn_enn(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+    numMenor = y.value_counts().max()
+    # Crear una instancia de SMOTE
+    adasyn = ADASYN(sampling_strategy='auto')
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    enn = EditedNearestNeighbours(sampling_strategy='auto', n_neighbors=1)
+    pipeline = Pipeline([('ADASYN', adasyn), ('ENN', enn)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    ADASYN + CNN
+"""
+def adasyn_cnn(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+    numMenor = y.value_counts().max()
+    # Crear una instancia de SMOTE
+    adasyn = ADASYN(sampling_strategy={0: numMenor + 100, 1: numMenor + 100})
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = adasyn.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    cnn = CondensedNearestNeighbour(sampling_strategy='auto', n_seeds_S = numMenor + 50, n_neighbors=500)
+    pipeline = Pipeline([('ADASYN', adasyn), ('CNN', cnn)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    ADASYN + CNN (fonemas)
+"""
+def adasyn_cnn_fon(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+    numMenor = y.value_counts().max()
+    # Crear una instancia de SMOTE
+    adasyn = ADASYN(sampling_strategy={0: numMenor + 1000, 1: numMenor + 1000})
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = adasyn.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    cnn = CondensedNearestNeighbour(sampling_strategy='auto', n_seeds_S = numMenor + 500)
+    pipeline = Pipeline([('ADASYN', adasyn), ('CNN', cnn)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    ADASYN + NCR
+"""
+def adasyn_ncr(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+
+    # Crear una instancia de SMOTE
+    adasyn = ADASYN(sampling_strategy='auto')
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    ncr = NeighbourhoodCleaningRule(sampling_strategy='all')
+    pipeline = Pipeline([('ADASYN', adasyn), ('NCR', ncr)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    ADASYN + OSS
+"""
+def adasyn_oss(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+
+    # Crear una instancia de SMOTE
+    adasyn = ADASYN(sampling_strategy='auto')
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    oss = OneSidedSelection(sampling_strategy='auto')
+    pipeline = Pipeline([('ADASYN', adasyn), ('OSS', oss)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    BorderlineSMOTE + tomek
+"""
+def BSMOTE_tomek(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+
+    # Crear una instancia de SMOTE
+    bsmote = BorderlineSMOTE(sampling_strategy='auto')
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    tmk = TomekLinks(sampling_strategy='all')
+    pipeline = Pipeline([('BorderlineSMOTE', bsmote), ('Tomek', tmk)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    BorderlineSMOTE + ENN
+"""
+def BSMOTE_enn(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+
+    # Crear una instancia de SMOTE
+    bsmote = BorderlineSMOTE(sampling_strategy='auto')
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    enn = EditedNearestNeighbours(sampling_strategy='auto', n_neighbors=1)
+    pipeline = Pipeline([('BorderlineSMOTE', bsmote), ('ENN', enn)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    BorderlineSMOTE + CNN
+"""
+def BSMOTE_cnn(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+    numMenor = y.value_counts().max()
+    # Crear una instancia de SMOTE
+    bsmote = BorderlineSMOTE(sampling_strategy={0: numMenor + 20, 1: numMenor + 20})
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    cnn = CondensedNearestNeighbour(sampling_strategy='auto', n_seeds_S= numMenor - 5)
+    pipeline = Pipeline([('BorderlineSMOTE', bsmote), ('CNN', cnn)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    BorderlineSMOTE + NCR
+"""
+def BSMOTE_ncr(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+
+    # Crear una instancia de SMOTE
+    bsmote = BorderlineSMOTE(sampling_strategy='auto')
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    ncr = NeighbourhoodCleaningRule(sampling_strategy='all')
+    pipeline = Pipeline([('BorderlineSMOTE', bsmote), ('NCR', ncr)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    BorderlineSMOTE + OSS
+"""
+def BSMOTE_oss(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+    numMenor = y.value_counts().max()
+    # Crear una instancia de SMOTE
+    bsmote = BorderlineSMOTE(sampling_strategy={0: numMenor + 20, 1: numMenor + 20})
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    oss = OneSidedSelection(sampling_strategy='auto', n_seeds_S= numMenor - 5)
+    pipeline = Pipeline([('BorderlineSMOTE', bsmote), ('OSS', oss)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    SVM_SMOTE + TOMEK
+"""
+def SVMSMOTE_tomek(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+
+    # Crear una instancia de SMOTE
+    svmsmote = SVMSMOTE(sampling_strategy='auto')
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    tmk = TomekLinks(sampling_strategy='auto')
+    pipeline = Pipeline([('SVMSMOTE', svmsmote), ('Tomek', tmk)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    SVM_SMOTE + ENN
+"""
+def SVMSMOTE_enn(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+
+    # Crear una instancia de SMOTE
+    svmsmote = SVMSMOTE(sampling_strategy='auto')
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    enn = EditedNearestNeighbours(sampling_strategy='auto', n_neighbors=1)
+    pipeline = Pipeline([('SVMSMOTE', svmsmote), ('ENN', enn)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    SVM_SMOTE + CNN
+"""
+def SVMSMOTE_cnn(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+    numMenor = y.value_counts().max()
+    # Crear una instancia de SMOTE
+    svmsmote = SVMSMOTE(sampling_strategy={0: numMenor + 20, 1: numMenor + 20})
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    cnn = CondensedNearestNeighbour(sampling_strategy='auto', n_seeds_S=numMenor -5)
+    pipeline = Pipeline([('SVMSMOTE', svmsmote), ('CNN', cnn)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    SVM_SMOTE + NCR
+"""
+def SVMSMOTE_ncr(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+
+    # Crear una instancia de SMOTE
+    svmsmote = SVMSMOTE(sampling_strategy='auto')
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    ncr = NeighbourhoodCleaningRule(sampling_strategy='auto')
+    pipeline = Pipeline([('SVMSMOTE', svmsmote), ('NCR', ncr)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    SVM_SMOTE + OSS
+"""
+def SVMSMOTE_oss(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+    numMenor = y.value_counts().max()
+    # Crear una instancia de SMOTE
+    svmsmote = SVMSMOTE(sampling_strategy={0: numMenor + 20, 1: numMenor + 20})
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    oss = OneSidedSelection(sampling_strategy='auto', n_seeds_S= numMenor - 5)
+    pipeline = Pipeline([('SVMSMOTE', svmsmote), ('OSS', oss)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    KMS_SMOTE + TOMEK
+"""
+def KMSSMOTE_tomek(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+
+    # Crear una instancia de SMOTE
+    kmssmote = KMeansSMOTE(sampling_strategy='auto', cluster_balance_threshold=0.001)
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    tmk = TomekLinks(sampling_strategy='auto')
+    pipeline = Pipeline([('KmeansSmote', kmssmote), ('Tomek', tmk)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    KMS_SMOTE + ENN
+"""
+def KMSSMOTE_enn(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+
+    # Crear una instancia de SMOTE
+    kmssmote = KMeansSMOTE(sampling_strategy='auto', cluster_balance_threshold=0.001)
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    enn = EditedNearestNeighbours(sampling_strategy='auto', n_neighbors = 1)
+    pipeline = Pipeline([('KmeansSmote', kmssmote), ('ENN', enn)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    KMS_SMOTE + CNN
+"""
+def KMSSMOTE_cnn(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+    numMenor = y.value_counts().max()
+    # Crear una instancia de SMOTE
+    kmssmote = KMeansSMOTE(sampling_strategy={0: numMenor + 20, 1: numMenor + 20}, cluster_balance_threshold=0.001)
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    cnn = CondensedNearestNeighbour(sampling_strategy='auto', n_seeds_S=numMenor - 5)
+    pipeline = Pipeline([('KmeansSmote', kmssmote), ('CNN', cnn)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    KMS_SMOTE + NCR
+"""
+def KMSSMOTE_ncr(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+    numMenor = y.value_counts().max()
+    # Crear una instancia de SMOTE
+    kmssmote = KMeansSMOTE(sampling_strategy={0: numMenor + 20, 1: numMenor + 20}, cluster_balance_threshold=0.0001)
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    ncr = NeighbourhoodCleaningRule(sampling_strategy='auto', threshold_cleaning=0.00001, n_neighbors=1)
+    pipeline = Pipeline([('KmeansSmote', kmssmote), ('NCR', ncr)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
+
+"""
+    KMS_SMOTE + OSS
+"""
+def KMSSMOTE_oss(dataset, target):
+
+    # Separar las características y el target
+    X = dataset.drop(target, axis=1)
+    y = dataset[target]
+    numMenor = y.value_counts().max()
+
+    # Crear una instancia de SMOTE
+    kmssmote = KMeansSMOTE(sampling_strategy={0: numMenor + 20, 1: numMenor + 20}, cluster_balance_threshold=0.0001)
+
+    # Aplicar SMOTE a los datos
+    #X_resampled, y_resampled = smote.fit_resample(X, y)
+
+    # Crear una instancia de Condensed Nearest Neighbour
+    oss = OneSidedSelection(sampling_strategy='auto', n_seeds_S = numMenor - 5)
+    pipeline = Pipeline([('KmeansSmote', kmssmote), ('OSS', oss)])
+
+    X_resampled, y_resampled = pipeline.fit_resample(X, y)
+
+    # Redimensionamos las clases.
+    y_resampled = y_resampled.to_numpy().reshape(-1, 1)
+    y_resampled = y_resampled.reshape(np.size(X_resampled, 0),1)
+    
+    cols_df = dataset.columns
+    cols_df = cols_df.drop(target)
+    
+    data = pd.DataFrame(X_resampled, columns=cols_df)
+    data[target] = y_resampled
+                
+    return data
 
 
 # TÉCNICAS DE NORMALIZACION Y ESTANDARIZACIÓN
