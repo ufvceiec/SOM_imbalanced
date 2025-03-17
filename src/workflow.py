@@ -36,7 +36,7 @@ from imblearn.under_sampling import RandomUnderSampler, NearMiss, CondensedNeare
 from imblearn.combine import SMOTETomek, SMOTEENN
 from imblearn.pipeline import Pipeline
 
-from missingpy import MissForest
+from missforest import MissForest
 
 import sys
 from impyute.imputation.cs import fast_knn

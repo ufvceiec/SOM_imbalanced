@@ -1,5 +1,0 @@
-MiniSom
-numpy
-pandas
-matplotlib
-GEMA
